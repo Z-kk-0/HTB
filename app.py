@@ -1,6 +1,7 @@
-from flask import Flask, request, render_template, redirect, send_file
+from flask import Flask, request, render_template, redirect, send_file, abort, Response
 import os
 import sqlite3
+import mimetypes
 
 app = Flask(__name__)
 UPLOAD_FOLDER = './uploads'
@@ -14,7 +15,6 @@ if not os.path.exists('users.db'):
     c.execute("INSERT INTO users (username, password) VALUES ('admin', 'supersecret')")
     conn.commit()
     conn.close()
-
 # --- Routes ---
 @app.route('/')
 def index():
@@ -64,8 +64,34 @@ def view():
     img = request.args.get('img', '')
 
     # VULN 3: Path Traversal / LFI
-    filepath = os.path.join(UPLOAD_FOLDER, img)
-    return send_file(filepath, mimetype='image/jpeg')
+    if img.startswith('../../') or '..' in img:
+        try:
+            base_dir = os.path.abspath(os.path.dirname(__file__))
+            full_path = os.path.normpath(os.path.join(base_dir, img))
+            with open(full_path, 'r') as f:
+                content = f.read()
+            return Response(content, mimetype='text/plain')
+        except Exception:
+            return abort(404)
+
+    # Normal image handling
+    try:
+        path = os.path.join(UPLOAD_FOLDER, img)
+        mime = mimetypes.guess_type(path)[0] or 'application/octet-stream'
+        return send_file(path, mimetype=mime)
+    except FileNotFoundError:
+        return abort(404)
+
+# --- RCE Trigger Route ---
+@app.route('/trigger')
+def trigger():
+    f = request.args.get('f')
+    filepath = os.path.join(UPLOAD_FOLDER, f)
+    try:
+        os.system(f'python3 {filepath}')
+        return "Executed"
+    except:
+        return "Execution failed"
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')
