@@ -2,20 +2,30 @@
 <html>
 <head>
     <title>Upload | PicShare</title>
-    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <h2>⬆️ Upload Image</h2>
+
     {% if error %}
         <p class="error">{{ error }}</p>
     {% endif %}
     {% if success %}
         <p class="success">{{ success }}</p>
     {% endif %}
+
     <form method="post" enctype="multipart/form-data">
         <input type="file" name="file">
         <input type="submit" value="Upload">
     </form>
-    <p>Wanna peek? <a href="/view?img=example.jpg">View example.jpg</a></p>
+
+    <h3>🖼️ Uploaded Images</h3>
+    <ul>
+        {% for image in images %}
+            <li><a href="{{ url_for('view') }}?img={{ image }}">{{ image }}</a></li>
+        {% endfor %}
+    </ul>
+
+    <p><a href="/">← Back to home</a></p>
 </body>
 </html>

@@ -37,7 +37,7 @@ def login():
         if user:
             return redirect('/upload')
         else:
-            return "Invalid credentials"
+            return render_template('login.html', error="Invalid credentials")
 
     return render_template('login.html')
 
@@ -51,11 +51,13 @@ def upload():
         if filename.endswith('.jpg'):
             filepath = os.path.join(UPLOAD_FOLDER, filename)
             file.save(filepath)
-            return f"Uploaded to {filepath}"
+            return render_template('upload.html', success=f"Uploaded to {filepath}")
         else:
-            return "Only .jpg allowed"
+            return render_template('upload.html', error="Only .jpg allowed")
 
-    return render_template('upload.html')
+    # List uploaded images
+    images = os.listdir(UPLOAD_FOLDER)
+    return render_template('upload.html', images=images)
 
 @app.route('/view')
 def view():
