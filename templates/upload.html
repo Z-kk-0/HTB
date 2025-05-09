@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload | PicShare</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <h2>⬆️ Upload Image</h2>
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+    {% if success %}
+        <p class="success">{{ success }}</p>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
+    </form>
+    <p>Wanna peek? <a href="/view?img=example.jpg">View example.jpg</a></p>
+</body>
+</html>
